@@ -442,17 +442,24 @@ const AddDrawer = ({
     return !Object.keys(x).length;
   };
   const locate = async () => {
-    if (!userId) return;
+    if (!window.isSecureContext) {
+      setErrors((x) => ({ ...x, form: "GPS requires HTTPS. Open the secure Reproutes URL." }));
+      return;
+    }
+    if (!("geolocation" in navigator)) {
+      setErrors((x) => ({ ...x, form: "This browser does not support GPS location." }));
+      return;
+    }
     setLocating(true);
     try {
       // Shop registration needs a usable position, not a survey-grade GPS fix.
       // The fast capture uses the browser cache first and falls back to a short
       // high-accuracy attempt, which works reliably on laptops and phones.
-      const p = await captureFastGpsPoint(userId);
+      const p = await captureFastGpsPoint(userId ?? "shop-registration");
       setForm((f) => ({
         ...f,
-        latitude: String(p.latitude),
-        longitude: String(p.longitude),
+        latitude: p.latitude.toFixed(6),
+        longitude: p.longitude.toFixed(6),
       }));
     } catch (e) {
       setErrors((x) => ({
