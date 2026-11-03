@@ -35,7 +35,11 @@ const agentRoute = (page: React.ReactNode, loginPath = '/sales/login') => (
 
 const ShopIdRoute = ({ page }: { page: React.ReactNode }) => {
   const { shopid } = useParams();
-  if (!shopid || !/^\d{10}$/.test(shopid)) return <Navigate to="/sales/shops" replace />;
+  // Shops are created with randomUUID() by the backend. Keep accepting the
+  // legacy numeric format so existing bookmarked shop links continue to work.
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(shopid ?? '');
+  const isLegacyId = /^\d{10}$/.test(shopid ?? '');
+  if (!shopid || (!isUuid && !isLegacyId)) return <Navigate to="/sales/shops" replace />;
   return page;
 };
 
