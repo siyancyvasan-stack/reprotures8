@@ -18,7 +18,7 @@ const schema = z.object({
     JWT_REFRESH_TTL_DAYS: z.coerce.number().int().positive().default(7),
     JWT_ISSUER: z.string().min(3).default('reproutes-api'),
     JWT_AUDIENCE: z.string().min(3).default('reproutes-clients'),
-    CORS_ORIGINS: z.string().default('https://reproutes.com,https://manager.reproutes.com,https://factory.reproutes.com,https://api.reproutes.com'),
+    CORS_ORIGINS: z.string().default('https://reproutes.com,https://manager.reproutes.com,https://factory.reproutes.com,https://api.reproutes.com,https://tracksale-1pmm.vercel.app'),
     TRUST_PROXY_HOPS: z.coerce.number().int().min(0).max(5).default(1),
     REDIS_URL: z.string().default(''),
     REDIS_KEY_PREFIX: z.string().regex(/^[a-zA-Z0-9:_-]+$/).default('reproutes:'),
