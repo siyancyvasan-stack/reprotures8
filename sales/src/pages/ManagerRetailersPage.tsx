@@ -16,7 +16,7 @@ import { ConfirmationDialog } from "../components/common/OverlayComponents";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { ApiError, apiRequest } from "../services/apiClient";
-import { capturePreciseGpsPoint } from "../services/deviceGps";
+import { captureFastGpsPoint } from "../services/deviceGps";
 import { loadAgents } from "../services/domainApi";
 type View = "all" | "add" | "pending";
 type Row = Record<string, any>;
@@ -445,7 +445,10 @@ const AddDrawer = ({
     if (!userId) return;
     setLocating(true);
     try {
-      const p = await capturePreciseGpsPoint(userId);
+      // Shop registration needs a usable position, not a survey-grade GPS fix.
+      // The fast capture uses the browser cache first and falls back to a short
+      // high-accuracy attempt, which works reliably on laptops and phones.
+      const p = await captureFastGpsPoint(userId);
       setForm((f) => ({
         ...f,
         latitude: String(p.latitude),
