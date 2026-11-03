@@ -102,21 +102,37 @@ export const apiRequest = async <T>(
   }
   if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`);
 
-  const response = await fetch(`${API_URL}${path}`, { ...init, headers, credentials: 'include' });
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 15_000);
+  try {
+    const response = await fetch(`${API_URL}${path}`, {
+      ...init,
+      headers,
+      credentials: 'include',
+      signal: init.signal ?? controller.signal,
+    });
 
-  if (response.status === 401 && retry && !path.includes('/auth/')) {
-    if (await refreshAccessToken()) return apiRequest<T>(path, init, false);
+    if (response.status === 401 && retry && !path.includes('/auth/')) {
+      if (await refreshAccessToken()) return apiRequest<T>(path, init, false);
+    }
+    if (!response.ok) {
+      const payload = await response.json().catch(() => null);
+      throw new ApiError(
+        response.status,
+        payload?.error?.code ?? 'API_REQUEST_FAILED',
+        payload?.error?.message ?? `API request failed (${response.status})`,
+        payload?.error?.details,
+      );
+    }
+    return response.status === 204 ? (undefined as T) : response.json();
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw new Error('Backend server did not respond. Check the API deployment and try again.');
+    }
+    throw error;
+  } finally {
+    window.clearTimeout(timeout);
   }
-  if (!response.ok) {
-    const payload = await response.json().catch(() => null);
-    throw new ApiError(
-      response.status,
-      payload?.error?.code ?? 'API_REQUEST_FAILED',
-      payload?.error?.message ?? `API request failed (${response.status})`,
-      payload?.error?.details,
-    );
-  }
-  return response.status === 204 ? (undefined as T) : response.json();
 };
 
 export const apiBlob = async (path: string, retry = true): Promise<Blob> => {
