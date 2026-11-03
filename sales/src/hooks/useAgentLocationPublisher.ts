@@ -48,7 +48,11 @@ export const useAgentLocationPublisher = (enabled: boolean, agentId?: string) =>
   const socketRef = useRef<Socket>();
   // Same-origin is the production topology. A missing build-time env var
   // must not silently disable live tracking after punch-in.
-  const configuredSocketUrl = import.meta.env.VITE_TRACKING_SOCKET_URL?.trim();
+    const configuredSocketUrl =
+      import.meta.env.VITE_TRACKING_SOCKET_URL?.trim() ||
+      (typeof window !== 'undefined' && /(^|\.)reproutes\.com$/i.test(window.location.hostname)
+        ? 'https://api.reproutes.com'
+        : undefined);
   const socketUrl = configuredSocketUrl && configuredSocketUrl !== 'same-origin'
     ? configuredSocketUrl
     : ((import.meta.env.VITE_API_URL as string | undefined)?.trim() || undefined);

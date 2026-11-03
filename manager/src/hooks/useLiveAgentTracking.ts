@@ -75,7 +75,10 @@ export const useLiveAgentTracking = (initialAgents: Agent[]) => {
   // merely because the frontend was built without a tracking env var.
   const configuredSocketIoUrl =
     ((import.meta.env.VITE_TRACKING_SOCKET_URL as string | undefined)?.trim() ||
-      (import.meta.env.VITE_API_URL as string | undefined)?.trim() || 'same-origin');
+      (import.meta.env.VITE_API_URL as string | undefined)?.trim() ||
+      (typeof window !== 'undefined' && /(^|\.)reproutes\.com$/i.test(window.location.hostname)
+        ? 'https://api.reproutes.com'
+        : 'same-origin'));
   const socketIoUrl =
     configuredSocketIoUrl === 'same-origin' ? undefined : configuredSocketIoUrl;
   const [connectionState, setConnectionState] = useState<TrackingConnectionState>(

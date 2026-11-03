@@ -46,7 +46,11 @@ export const useAgentLocationPublisher = (enabled: boolean, agentId?: string) =>
   const [state, setState] = useState<LocationPublisherState>('tracking-stopped');
   const [accuracyMeters, setAccuracyMeters] = useState<number>();
   const socketRef = useRef<Socket>();
-  const configuredSocketUrl = import.meta.env.VITE_TRACKING_SOCKET_URL?.trim();
+    const configuredSocketUrl =
+      import.meta.env.VITE_TRACKING_SOCKET_URL?.trim() ||
+      (typeof window !== 'undefined' && /(^|\.)reproutes\.com$/i.test(window.location.hostname)
+        ? 'https://api.reproutes.com'
+        : undefined);
   const socketUrl = configuredSocketUrl === 'same-origin' ? undefined : configuredSocketUrl;
 
   useEffect(() => {
